@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Service Worker Example</title>
+  </head>
+  <body>
+    <h1>Service Worker HTTP Interception Example</h1>
+    <button id="fetch-cid">Fetch CID</button>
+    <button id="fetch-data">Fetch Data</button>
+    <div id="output"></div>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+          .register('/service-worker.js')
+          .then(function (registration) {
+            console.log('Service Worker registered with scope:', registration.scope)
+          })
+          .catch(function (error) {
+            console.log('Service Worker registration failed:', error)
+          })
+      }
+
+      // This request will be intercepted by SW
+      document.getElementById('fetch-cid').addEventListener('click', () => {
+        fetch('https://ipfs.io/ipfs/bafybeicklkqcnlvtiscr2hzkubjwnwjinvskffn4xorqeduft3wq7vm5u4')
+          .then((response) => response.blob())
+          .then((blob) => {
+            const imageObjectURL = URL.createObjectURL(blob)
+
+            const image = document.createElement('img')
+            image.src = imageObjectURL
+
+            document.getElementById('output').append(image)
+          })
+      })
+
+      // This request should not be intercepted
+      document.getElementById('fetch-data').addEventListener('click', () => {
+        fetch('https://swapi.dev/api/planets/1', { headers: { Accept: 'application/json' } })
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById('output').innerText = JSON.stringify(data)
+          })
+      })
+    </script>
+  </body>
+</html>
